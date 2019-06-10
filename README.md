@@ -1,7 +1,7 @@
 Install Packages
 ---
  
- - pip3 -r install requirements.txt
+ - pip3 install -r requirements.txt
 
 
 Deploy Virtaul Machine in VCSA

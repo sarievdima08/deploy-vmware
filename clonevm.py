@@ -111,11 +111,19 @@ class CloneVM(ConnVC):
         return
 
     def set_portgroup(self, portgroup_name):
+        # Check portgroup is in dvs or vss
         if portgroup_name:
-            portgroup = self.get_obj([vim.Network], portgroup_name)
-            if portgroup is None:
-                print("Portgroup not found")
-                return
+            portgroup_vds = self.get_obj([vim.dvs.DistributedVirtualPortgroup], portgroup_name)
+            if portgroup_vds is None:
+                portgroup_vss = self.get_obj([vim.Network], portgroup_name)
+                if portgroup_vss is None:
+                    print("Portgroup not found")
+                    return
+            else:
+                portgroup = vim.dvs.PortConnection()
+                portgroup.portgroupKey = portgroup_vds.key
+                portgroup.switchUuid = portgroup_vds.config.distributedVirtualSwitch.uuid
+
         else:
             print("Portgroup not defind")
             return
@@ -127,9 +135,14 @@ class CloneVM(ConnVC):
         self.vmnic.device.key = 4000
         self.vmnic.device.wakeOnLanEnabled = True
         # set portgroup on this nic
-        self.vmnic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
-        self.vmnic.device.backing.network = portgroup
-        self.vmnic.device.backing.deviceName = portgroup_name
+        if portgroup_vds is None:
+            self.vmnic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+            self.vmnic.device.backing.network = portgroup_vss
+            self.vmnic.device.backing.deviceName = portgroup_name
+        else:
+            self.vmnic.device.backing = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
+            self.vmnic.device.backing.port = portgroup
+
         # set this vmnic settings
         self.vmnic.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
         self.vmnic.device.connectable.startConnected = True
@@ -156,18 +169,4 @@ class CloneVM(ConnVC):
         task = self.template.Clone(folder=self.folder, name=self.vmname, spec=clonespec)
         self.wait_for_task(task)
         return True
-
-
-if __name__ == '__main__':
-    v = CloneVM()
-    v.set_folder('NTC', 'Templates')
-    v.set_vmlocation('DS-iSCSI01-33', 'v4Cluster')
-    v.set_template('CRHEL-10G')
-    v.set_vmspec(2, 1024)
-    v.set_vmname('pytest')
-    v.set_network('10.0.0.2', '10.0.0.254', '255.255.255.0', '1.1.1.1', '8.8.8.8', 'pytest2')
-    v.set_portgroup('192.168.4.0')
-    v.clone()
-    v.disconnect()
-
 

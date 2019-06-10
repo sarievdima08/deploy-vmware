@@ -29,26 +29,29 @@ class LoadCSV:
     def print(self):
         return
 
-    def data_print(self):
-        x = PrettyTable(['NO'] + self.headname)
+    def data_print2(self):
+        table_header01 = ['NO'] + self.headname[0:6]
+        table_header02 = ['NO'] + self.headname[0:1] + self.headname[6:14]
+        x1 = PrettyTable(table_header01)
+        x2 = PrettyTable(table_header02)
         count = 1
-        for line in self.vmlist:
-            list = [count]
-
-            for key, value in line.items():
-                list.append(str(value))
-            x.add_row(list)
+        for vminfo in self.vmlist:
+            vminfo['NO'] = count
+            line1 = []
+            line2 = []
+            for header in table_header01:
+                line1.append(vminfo[header])
+            for header in table_header02:
+                line2.append(vminfo[header])
+            x1.add_row(line1)
+            x2.add_row(line2)
             count += 1
-        return x
-
-
-
+        print(x1)
+        print(x2)
 
 
 if __name__ == '__main__':
     a = LoadCSV('vmlist.csv')
-    #a.print()
-    b = a.data_print()
-    print(b)
+    a.data_print2()
 
 

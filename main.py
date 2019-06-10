@@ -36,8 +36,8 @@ class Main:
         return
 
     def table(self):
-        table = self.vmlist.data_print()
-        return table
+        table = self.vmlist.data_print2()
+        return
 
 
 if __name__ == '__main__':
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     if check is False:
         print("Login vCenter Server Failed")
         sys.exit()
-    print(x.table())
+    x.table()
     print("0.Clone VM")
     print("1.Exit")
     while True:

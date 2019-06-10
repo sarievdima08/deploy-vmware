@@ -60,8 +60,10 @@ class ConnVC:
 if __name__ == '__main__':
     v = ConnVC()
     check = v.connect(input('vcenter ip:'), input('vcenter id:'), input('passwd'))
-
-    vm = v.get_obj([vim.VirtualMachine],'CRHEL-r5G')
+    vm = v.get_obj([vim.Network],'test')
     print(type(vm))
-    #print(vm.config.hardware.device)
+    print(vm)
+    vm2 = v.get_obj([vim.dvs.DistributedVirtualPortgroup],'test')
+    print(type(vm2))
+    print(vm2)
     v.disconnect()
